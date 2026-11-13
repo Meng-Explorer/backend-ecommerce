@@ -18,7 +18,7 @@ public class AddressController
         _service = service;
     }
 
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    // [Authorize(Roles = "Admin,SuperAdmin")
     [HttpGet]
     public async Task<IActionResult> GetAddressByPageAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
