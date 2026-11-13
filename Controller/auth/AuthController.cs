@@ -129,7 +129,10 @@ public class AuthController : ControllerBase
 
         [AllowAnonymous]
         [HttpGet("external-login/{provider}")]
-        public IActionResult ExternalLoginChallenge(string provider, [FromQuery] string? returnUrl = null)
+        public async Task<IActionResult> ExternalLoginChallenge(
+            string provider,
+            [FromServices] IAuthenticationSchemeProvider schemeProvider,
+            [FromQuery] string? returnUrl = null)
         {
             var scheme = provider.ToLowerInvariant() switch
             {
@@ -141,6 +144,12 @@ public class AuthController : ControllerBase
             if (scheme == null)
             {
                 return BadRequest(ApiResponse.Error("Unsupported provider. Supported providers are 'google' and 'github'."));
+            }
+
+            var registeredScheme = await schemeProvider.GetSchemeAsync(scheme);
+            if (registeredScheme == null)
+            {
+                return BadRequest(ApiResponse.Error($"{scheme} authentication is not configured on the server. Please configure ClientId and ClientSecret."));
             }
 
             var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth", new { returnUrl });

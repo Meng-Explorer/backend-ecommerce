@@ -13,7 +13,7 @@ public class AddressService : IAddressService
 {
     private readonly IAddressRepository _repository;
     private readonly IMapper _mapper;
-    private readonly ILogger<AddressService> _logger; 
+    private readonly ILogger<AddressService> _logger;  
 
     public AddressService(IAddressRepository repository, IMapper mapper, ILogger<AddressService> logger)
     {

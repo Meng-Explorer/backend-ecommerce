@@ -787,10 +787,12 @@ public class UserService : IUserService
         {
             try
             {
-                var settings = new GoogleJsonWebSignature.ValidationSettings()
+                var googleClientId = _configuration["Authentication:Google:ClientId"];
+                var settings = new GoogleJsonWebSignature.ValidationSettings();
+                if (!string.IsNullOrWhiteSpace(googleClientId))
                 {
-                    Audience = new List<string>() { _configuration["Authentication:Google:ClientId"]! }
-                };
+                    settings.Audience = new List<string>() { googleClientId };
+                }
                 return await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
             }
             catch (Exception ex)

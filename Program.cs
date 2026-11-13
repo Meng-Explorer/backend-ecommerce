@@ -106,6 +106,7 @@ builder.Services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 builder.Services.AddScoped<IRoleClaimRepository, RoleClaimRepository>();
 
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 
 
@@ -117,6 +118,7 @@ builder.Services.AddHttpClient();
 
 // Add Scoped Services
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -217,7 +219,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // Configure Authentication
-builder.Services.AddAuthentication(opt =>
+var authBuilder = builder.Services.AddAuthentication(opt =>
 {
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -272,20 +274,32 @@ builder.Services.AddAuthentication(opt =>
             return Task.CompletedTask;
         }
     };
-})
-.AddGoogle(options =>
-{
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
-    options.SignInScheme = IdentityConstants.ExternalScheme;
-})
-.AddGitHub(options =>
-{
-    options.ClientId = builder.Configuration["Authentication:Github:ClientId"] ?? "";
-    options.ClientSecret = builder.Configuration["Authentication:Github:ClientSecret"] ?? "";
-    options.SignInScheme = IdentityConstants.ExternalScheme;
-    options.Scope.Add("user:email");
 });
+
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+        options.SignInScheme = IdentityConstants.ExternalScheme;
+    });
+}
+
+var githubClientId = builder.Configuration["Authentication:Github:ClientId"];
+var githubClientSecret = builder.Configuration["Authentication:Github:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(githubClientId) && !string.IsNullOrWhiteSpace(githubClientSecret))
+{
+    authBuilder.AddGitHub(options =>
+    {
+        options.ClientId = githubClientId;
+        options.ClientSecret = githubClientSecret;
+        options.SignInScheme = IdentityConstants.ExternalScheme;
+        options.Scope.Add("user:email");
+    });
+}
 
 
 builder.Services.AddAuthorization();
